@@ -21,7 +21,7 @@
  This script initializes the plugin, making it known to QGIS.
 """
 
+from .dsgtoolsop import DSGToolsOp
+
 def classFactory(iface):
-    # load AzimuthDistanceCalculator class from file AzimuthDistanceCalculator
-    from .dsgtoolsop import DSGToolsOp
     return DSGToolsOp(iface)

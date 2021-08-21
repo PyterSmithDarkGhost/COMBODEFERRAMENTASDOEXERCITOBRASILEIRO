@@ -42,14 +42,14 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QPushButton" name="createSqliteButton">
+       <widget class="QPushButton" name="createDatabaseButton">
         <property name="text">
          <string>Criar arquivo de simbologia militar</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="loadSqliteButton">
+       <widget class="QPushButton" name="loadDatabaseButton">
         <property name="text">
          <string>Abrir arquivo de simbologia militar existente</string>
         </property>

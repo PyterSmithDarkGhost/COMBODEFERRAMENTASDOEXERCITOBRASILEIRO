@@ -18,7 +18,7 @@ class MilitarySimbologyInterface(QtWidgets.QFrame, GUI):
 
     def initVariables(self):
         self.controller = None
-        self.sqlitePath = None
+        self.dataBasePath = None
         self.createDataBaseInterface = None
         self.currentScale = None
         self.baseDeDados = BaseDeDados()
@@ -33,31 +33,25 @@ class MilitarySimbologyInterface(QtWidgets.QFrame, GUI):
         QMessageBox.warning(self, u"Aviso:", msg, QMessageBox.Close)
 
     def setDataBase(self): #carrega
-        sqlitePath = QFileDialog.getOpenFileName(self, 'Selecionar Sqlite', '', "Selecione banco de dados (*.sqlite)")[0]
-        if sqlitePath:
-            self.sqlitePath = sqlitePath
-            self.baseDeDados.setCurrentSqlite(self.sqlitePath)
-            if self.baseDeDados.validateSqlite() == 1:
-                if self.baseDeDados.loadLayer():
-                    self.msg( u'Arquivo de simbologia militar carregado com sucesso!')
-                    return 1
-                else:
-                    self.msg( u'Erro ao carregar o arquivo de simbologia militar.')
-                    return 0
-            elif self.baseDeDados.validateSqlite() == 2:
-                self.msg( u'Este arquivo não é de Simbologia Militar.\nSelecione o arquivo correto.')
-                return 0
-            elif self.baseDeDados.validateSqlite() == 3:
-                self.msg( u'Este arquivo foi criado numa versão anterior do DsgToolsOp, não sendo compatível com a versão instalada')
-                return 0
+        dataBasePath = QFileDialog.getOpenFileName(self, 'Selecionar Geopackage', '', "Selecione banco de dados (*.gpkg)")[0]
+        if dataBasePath:
+            self.dataBasePath = dataBasePath
+            self.baseDeDados.setCurrentDatabase(self.dataBasePath)
+            loadResult = self.baseDeDados.loadDatabase()
+            if loadResult == 1:
+                self.msg( u'Camadas carregado com sucesso!')
+                return 1
+            elif loadResult == 2:
+                self.msg( u'Projeto carregado com sucesso!')
+                return 1
         else:
             return 0
 
     @pyqtSlot(bool)
-    def on_createSqliteButton_clicked(self): #modificado para criar e já carregar
+    def on_createDatabaseButton_clicked(self): #modificado para criar e já carregar
         self.getCreateDataBaseInterface().showDialog()
 
     @pyqtSlot(bool)
-    def on_loadSqliteButton_clicked(self): #seleciona o banco e já carrega
+    def on_loadDatabaseButton_clicked(self): #seleciona o banco e já carrega
         if self.setDataBase():
             self.close()

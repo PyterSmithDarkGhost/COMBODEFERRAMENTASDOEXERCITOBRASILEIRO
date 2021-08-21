@@ -84,12 +84,25 @@
        <property name="text">
         <string>Índice nom.</string>
        </property>
+       <property name="textAlignment">
+        <set>AlignCenter</set>
+       </property>
       </column>
       <column>
        <property name="text">
         <string>MI</string>
        </property>
+       <property name="textAlignment">
+        <set>AlignCenter</set>
+       </property>
       </column>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="downloadButton">
+      <property name="text">
+       <string>Baixar Cartas na Área (Processo demorado)</string>
+      </property>
      </widget>
     </item>
     <item>

@@ -48,7 +48,7 @@ class AzimuthTool(QObject):
             dist_check = True
             ang_check = True
             while dist_check:
-                inp_dist = QInputDialog.getText(qid, "Digite a distância", "Distância (unidades do mapa): ", QLineEdit.Normal)[0]
+                inp_dist = QInputDialog.getText(qid, "Digite a distância", "Distância (unidades da camada): ", QLineEdit.Normal)[0]
                 if not inp_dist:
                     return
                 try:

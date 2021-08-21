@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <author>Ten Borba</author>
- <class>CriaSpatialite</class>
- <widget class="QWidget" name="CriaSpatialite">
+ <class>CriaDatabase</class>
+ <widget class="QWidget" name="CriaDatabase">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -158,7 +158,7 @@
   <connection>
    <sender>cancelButton</sender>
    <signal>clicked()</signal>
-   <receiver>CriaSpatialite</receiver>
+   <receiver>CriaDatabase</receiver>
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">

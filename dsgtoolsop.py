@@ -142,15 +142,6 @@ class DSGToolsOp:
 		from .Visibility.main import Main as Main_Visib
 		self.mainVisib = Main_Visib(iface)
 
-		self.tm_action = self.add_action(
-			os.path.join(os.path.dirname(__file__), 'icons', 'traff.png'),
-			text=u'Corredores de mobilidade (beta)',
-			callback=self.loadMobPath,
-			parent=self.dsgToolsOp,
-			add_to_menu=False,
-			add_to_toolbar=False)
-		self.dsgToolsOp.addAction(self.tm_action)
-
 		self.ar_action = self.add_action(
 			os.path.join(os.path.dirname(__file__), 'icons', 'arearange.png'),
 			text=u'Geração de área de alcance de armamento',

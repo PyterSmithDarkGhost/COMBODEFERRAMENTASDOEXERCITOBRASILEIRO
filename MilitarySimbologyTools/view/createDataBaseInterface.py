@@ -5,7 +5,7 @@ from qgis.PyQt.QtWidgets import QMessageBox, QFileDialog
 from qgis.gui import QgsProjectionSelectionDialog
 from qgis.PyQt.QtCore import pyqtSlot, pyqtSignal, Qt, QObject
 from ..model.baseDeDados import BaseDeDados
-import sqlite3, os
+import os
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), 'createDataBaseInterface.ui'))
 
@@ -45,15 +45,13 @@ class CreateDataBaseInterface(QtWidgets.QDialog, FORM_CLASS):
         self.fileNameLineEdit.clear()
 
     def doCreateDataBase(self):
-        epsg = 3857 #pseudo mercator, sempre será este
         if self.folder and self.name:
-            path = os.path.join(self.folder, self.name)+'.sqlite'
-            src = str(epsg)
-            self.baseDeDados.createDataBase(path+';'+src)
+            path = os.path.join(self.folder, self.name)+'.gpkg'
+            self.baseDeDados.createDataBase(path)
             if os.path.isfile(path):
                 QMessageBox.warning(self, u"Aviso:", u'Arquivo de simbologia militar criado com sucesso!\nAguarde o carregamento automático')
-                self.baseDeDados.setCurrentSqlite(path)
-                if self.baseDeDados.loadLayer():
+                self.baseDeDados.setCurrentDatabase(path)
+                if self.baseDeDados.loadDatabase():
                     QMessageBox.warning(self, u"Aviso:", u'Arquivo de simbologia militar carregado com sucesso!')
                     return 1
                 else:

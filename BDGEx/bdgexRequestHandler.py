@@ -39,20 +39,20 @@ class BDGExRequestHandler(QObject):
         super(BDGExRequestHandler, self).__init__()
         self.availableServicesDict = {
             'mapcache' : {
-                'url' : 'http://bdgex.eb.mil.br/mapcache',
+                'url' : 'https://bdgex.eb.mil.br/mapcache',
                 'services' : {
                     'WMS' : dict()
                 }
             },
             'mapindex' : {
-                'url' : 'http://bdgex.eb.mil.br/cgi-bin/mapaindice',
+                'url' : 'https://bdgex.eb.mil.br/cgi-bin/mapaindice',
                 'services': {
                     'WMS' : dict(),
                     'WFS' : dict()
                 }
             },
             'auxlayers' : {
-                'url' : 'http://bdgex.eb.mil.br/cgi-bin/geoportal',
+                'url' : 'https://bdgex.eb.mil.br/cgi-bin/geoportal',
                 'services' : {
                     'WMS' : dict(),
                     'WFS' : dict()
@@ -78,8 +78,8 @@ class BDGExRequestHandler(QObject):
                 urllib.request.install_opener(opener)
                 return
 
-        proxyStr = 'http://'+user+':'+password+'@'+host+':'+port
-        proxy = urllib.request.ProxyHandler({'http': proxyStr})
+        proxyStr = 'https://'+user+':'+password+'@'+host+':'+port
+        proxy = urllib.request.ProxyHandler({'https': proxyStr})
         opener = urllib.request.build_opener(proxy, urllib.request.HTTPHandler)
         urllib.request.install_opener(opener)
         return          
