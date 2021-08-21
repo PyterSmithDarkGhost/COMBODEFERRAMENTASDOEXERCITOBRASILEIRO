@@ -8,7 +8,7 @@
 
 [general]
 name=DSGTools Op
-qgisMinimumVersion=3.20
+qgisMinimumVersion=3.16
 description=Ferramentas para planejamento militar do Exército Brasileiro
 version=2.1.2
 author=Exército Brasileiro - Diretoria de Serviço Geográfico
