@@ -24,10 +24,11 @@ from qgis.PyQt.QtCore import Qt
 from qgis.PyQt import QtGui, QtCore, uic
 import os, sys, webbrowser
 from qgis.utils import iface
-from qgis.core import QgsMapLayer, QgsProject
+from qgis.core import QgsMapLayer, QgsProject, QgsApplication
 from qgis.PyQt.QtWidgets import QToolBar, QAction, QMessageBox, QMenu
 from qgis.PyQt.QtGui import QIcon
 from .BDGEx.bdgexGuiManager import BDGExGuiManager
+from .Processings.pluginProvider import pluginProvider
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),'auxiliar'))
 
@@ -39,6 +40,7 @@ class DSGToolsOp:
 	def initGui(self):
 		self.initVariables()
 		self.loadTools()
+		pluginProvider.initProcessing(self)
 
 	def initPlugin(self):
 		pass
@@ -52,6 +54,7 @@ class DSGToolsOp:
 		self.menuBar.insertMenu(self.iface.firstRightStandardMenu().menuAction(), self.dsgToolsOp)
 
 	def unload(self):
+		QgsApplication.processingRegistry().removeProvider(self.provider)
 		for action in self.actions:
 			self.iface.removePluginMenu(u'DSGTools Op',	action)
 		if self.dsgToolsOp is not None:
@@ -280,6 +283,15 @@ class DSGToolsOp:
 		from .measureTool.measureTool import MeasureTool as Main_MeasureTool
 		self.mainMeasureTool = Main_MeasureTool(iface)
 
+		self.mosaic_action = self.add_action(
+			os.path.join(os.path.dirname(__file__), 'icons', 'mosaic.png'),
+			text=u'Mosaicar',
+			callback=self.loadMakeMosaic,
+			parent=self.dsgToolsOp,
+			add_to_menu=False,
+			add_to_toolbar=False)
+		self.dsgToolsOp.addAction(self.mosaic_action)
+
 		self.ms_action = self.add_action(
 		 	os.path.join(os.path.dirname(__file__), 'icons', 'help.png'),
 		 	text=u'Ajuda',
@@ -388,6 +400,10 @@ class DSGToolsOp:
 		from .VirtualFieldGenerator.virtualFieldGenerator import VirtualFieldGenerator
 		dialogVFG = VirtualFieldGenerator(iface)
 		dialogVFG.exec_()
+	
+	def loadMakeMosaic(self):
+		from qgis import processing
+		processing.execAlgorithmDialog('DSGToolsOpProvider:mosaic')
 
 	def loadShaderTool(self):
 		"""
