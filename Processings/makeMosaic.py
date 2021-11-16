@@ -104,7 +104,6 @@ class MakeMosaic(QgsProcessingAlgorithm):
                     frameGrid.select(feat.id())
                     frameSelected = frameGrid.materialize(QgsFeatureRequest().setFilterFids(frameGrid.selectedFeatureIds()))
                     if pctLayer.bandCount()==1 and fixPct:
-                        print(fixPct)
                         rgbLayer = self.pctToRgb(context, feedback, pctLayer)
                     else:
                         if fixPct and not pctLayer.bandCount()==1:
