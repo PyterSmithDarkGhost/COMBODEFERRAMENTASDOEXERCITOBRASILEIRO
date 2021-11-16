@@ -80,7 +80,7 @@ class MakeMosaic(QgsProcessingAlgorithm):
         inputFrame = self.parameterAsVectorLayer(parameters,'INPUT_FRAME', context)
         nameField = self.parameterAsFields (parameters,'INPUT_NAME_FIELD', context)[0]
         fixPct = self.parameterAsBool(parameters,'CHECKBOX_PCT', context)
-        matchLayers = fixPct = self.parameterAsBool(parameters,'CHECKBOX_MATCH_LAYERS', context)
+        matchLayers = self.parameterAsBool(parameters,'CHECKBOX_MATCH_LAYERS', context)
         frameGrid = inputFrame
         if matchLayers:
             frameLayer = self.matchLayerAndFrame(inputFrame, layers)
@@ -104,6 +104,7 @@ class MakeMosaic(QgsProcessingAlgorithm):
                     frameGrid.select(feat.id())
                     frameSelected = frameGrid.materialize(QgsFeatureRequest().setFilterFids(frameGrid.selectedFeatureIds()))
                     if pctLayer.bandCount()==1 and fixPct:
+                        print(fixPct)
                         rgbLayer = self.pctToRgb(context, feedback, pctLayer)
                     else:
                         if fixPct and not pctLayer.bandCount()==1:
@@ -118,7 +119,7 @@ class MakeMosaic(QgsProcessingAlgorithm):
         return{self.OUTPUT: merged}
     
     def matchLayerAndFrame(self, inputFrame, layers):
-        frameLayer = processing.run('script:matchlayerandframe',
+        frameLayer = processing.run('DSGToolsOpProvider:matchlayerandframe',
                 {
                     'INPUT_LAYERS': layers,
                     'INPUT_FRAME': inputFrame,
