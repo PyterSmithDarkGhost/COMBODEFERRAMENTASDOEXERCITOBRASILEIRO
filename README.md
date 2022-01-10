@@ -23,6 +23,9 @@ O DSGTools Op tem a finalidade facilitar o uso da geoinformação digital pelas 
 13. **Alcance do armamento** - Gera buffers de alcance de armamento com base em valor definido pelo usuário, valendo-se também de um azimute de tiro e uma angulação de visada/atuação da peça.
 14. **Geração de azimutes e distâncias** - Seleciona-se vários pontos, ou uma linha ou um polígono e é gerado um “csv” com as coordenadas do primeiro ponto e o azimute e distância para os demais pontos.
 15. **Plano de chamada** - A partir de endereços geocodificados, pontos gerados previamente com ferramenta ‘Geocodificação’, agrupa os pontos através de algoritmos de proximidade espacial, visando subdividir o espaço em regiões de atuação e definir centros de atuação mais justos que distribuam uniformemente as distâncias entre o mesmo e cada ponto.
+16. **Mosaicar** - Seleciona-se várias camadas para mosaicar, a moldura e é gerado o mosaico. Pode-se associar a imagem aos polígonos automaticamente usando o campo "nome" na moldura ou informando o campo da moldura que contém o nome da imagem correspondente àquele polígono. No caso de imagens com paleta pode-se corrigir automaticamente. Atenção: não corrigr paleta automaticamente quando selecionar outras camadas de apenas uma banda sem ser paleta, como imagens de MDS. 
+
+
 
 ---
 ## Créditos
