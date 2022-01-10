@@ -75,7 +75,7 @@ class MakeMosaic(QgsProcessingAlgorithm):
         ) 
         
     def processAlgorithm(self, parameters, context, feedback):      
-        feedback.setProgressText('Construindo quadricula...')
+        feedback.setProgressText('Construindo mosaico...')
         layers = self.parameterAsLayerList(parameters,'INPUT_LAYERS', context)
         inputFrame = self.parameterAsVectorLayer(parameters,'INPUT_FRAME', context)
         nameField = self.parameterAsFields (parameters,'INPUT_NAME_FIELD', context)[0]
