@@ -1,14 +1,9 @@
 # DSGTools Op
-### Ferramentas para planejamento militar do Exército Brasileiro.
+### Ferramentas para utilização da geoinformação digital pelo Exército Brasileiro.
 #### DSG - Diretoria de Serviço Geográfico
 
-![](https://img.shields.io/badge/stable--version-2.1.2-brightgreen.svg) ![](https://img.shields.io/badge/stable--date-2021_08_19-green.svg) [![maintainer](https://img.shields.io/badge/maintainer-diegobenincasa-blue.svg)](http://github.com/diegobenincasa) [![maintainer](https://img.shields.io/badge/maintainer-JoaoFelipeAGuimaraes-blue.svg)](http://github.com/JoaoFelipeAGuimaraes)
 ---
-O DSGTools Op é um conjunto de ferramentas produto dos Estágios Básico e Avançado de Geoinformação para Corpo de Tropa, ministrados desde 2015, onde são apresentados os conceitos da geoinformação e as suas potencialidades de utilização prática, por intermédio de um SIG, que visa auxiliar nas atividades de preparo e emprego da tropa.
-
-Durante os cursos de 2016 e 2017, os instrutores receberam uma série de comentários sobre possíveis aplicações do QGIS nas atividades das OM e foi identificada a necessidade de um plugin que reunisse as diversas ferramentas de interesse militar, implementadas de forma a facilitar sua utilização por OM de Corpo de Tropa. Para isso, deveriam ser utilizadas terminologias de uso militar e omitidas configurações específicas (fora do conhecimento básico da geoinformação para Corpo de Tropa).
-
-A materialização desse conjunto de ferramentas foi denominada DSGTools Op, idealizado como uma extensão do plugin DSGTools, mas hoje totalmente independente.
+O DSGTools Op tem a finalidade facilitar o uso da geoinformação digital pelas OM de Corpo de Tropa do Exército Brasileiro, servindo de ferramenta básica para atuar nos PCI de geoinformação e futuramente no Estágio de Geoinformação para Corpo de Tropa.
 
 ---
 ### Ferramentas atuais
