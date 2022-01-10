@@ -206,5 +206,5 @@ class MakeMosaic(QgsProcessingAlgorithm):
         return 'vetoreraster'
 
     def shortHelpString(self):
-        return self.tr("O algoritmo atribui um SRC definido pelo usuario a camadas cujo SRC nao estava definido")
+        return self.tr("O algoritmo mosaica as camadas selcionadas baseada na moldura, que é responsável por limitar, usando polígonos, a área a ser mosaicada de cada imagem. Pode-se associar a imagem aos polígonos informando o campo da moldura que contém o nome da imagem correspondente ao polígono ou automaticamente, nesse caso será usado o campo 'nome' na moldura, portanto, é necessário que este campo já esteja preenchido com o nome da imagem correspondente. No caso de imagens com paleta pode-se corrigir automaticamente. Atenção: não corrigr paleta automaticamente quando selecionar outras camadas de apenas uma banda sem ser paleta, como imagens de MDS")
     
