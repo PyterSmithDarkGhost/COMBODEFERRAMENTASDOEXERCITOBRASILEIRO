@@ -8,7 +8,7 @@
 
 [general]
 name=DSGTools Op
-qgisMinimumVersion=3.16
+qgisMinimumVersion=3.22
 description=Ferramentas para planejamento militar do Exército Brasileiro
 version=2.1.2
 author=Exército Brasileiro - Diretoria de Serviço Geográfico
@@ -27,6 +27,7 @@ about=
 	- Perfil do terreno
 	- Geocodificação (direta e reversa)
 	- Medição na aquisição vetorial
+	- Mosaicar
 	- Sombreamento do terreno
 	- Criação de pontos por azimute/distância
 	- Alcance do armamento
@@ -48,6 +49,7 @@ about=
 	- Profile tool
 	- Geocoding (direct and reverse)
 	- In-digitize measure tool
+	- Make Mosaic
 	- Terrain Shading
 	- Point creation by distance and azimuth
 	- Gun range tool
