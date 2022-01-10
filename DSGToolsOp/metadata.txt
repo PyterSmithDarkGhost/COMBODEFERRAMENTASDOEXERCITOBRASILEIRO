@@ -82,6 +82,7 @@ about=
 # Uncomment the following line and add your changelog:
 changelog=
 	PORTUGUÊS
+	2.2.0 - Adicionado Mosaicar
 	2.1.0 - Adicionadas novas funcionalidades pendentes, correção de bugs
 	2.0.3 - Adicionada Simbologia Militar para QGIS 3
 	2.0.2 - Correção de bugs
@@ -106,6 +107,7 @@ changelog=
 	0.1   - Versão inicial com Simbologia Militar
 
 	ENGLISH
+	2.2.0 - Added Make Mosaic
 	2.1.0 - Added pending features, bug fixes
 	2.0.3 - Added Military Symbology for QGIS 3
     2.0.2 - Bug fixes	
