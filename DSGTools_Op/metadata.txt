@@ -10,7 +10,7 @@
 name=DSGTools Op
 qgisMinimumVersion=3.22
 description=Ferramentas para planejamento militar do Exército Brasileiro
-version=2.1.2
+version=2.2.1
 author=Exército Brasileiro - Diretoria de Serviço Geográfico
 email=suporte.dsgtools@dsg.eb.mil.br
 about=
@@ -35,6 +35,7 @@ about=
 	- Plano de chamada 
 	- Corredores de mobilidade
 	- Visibilidade
+	- Inserir MASACODE
 	
 	+ENGLISH:
 	GIS tools for military planning, specially for the Brazilian Army.
@@ -57,6 +58,7 @@ about=
 	- Rendezvous tool
 	- Mobility paths
 	- Visibility
+	- Insert MASACODE
 
 	Magnetic declination obtained using geomag.py by Christopher Weiss cmweiss@gmail.com. 
 	WMM model by NOAA NCEI Geomagnetic Modeling Team and British Geological Survey. 2019. 
@@ -82,6 +84,7 @@ about=
 # Uncomment the following line and add your changelog:
 changelog=
 	PORTUGUÊS
+	2.2.1 - Adicionado funcionalidade para inserir MASACODE
 	2.2.0 - Adicionado Mosaicar
 	2.1.0 - Adicionadas novas funcionalidades pendentes, correção de bugs
 	2.0.3 - Adicionada Simbologia Militar para QGIS 3
@@ -107,6 +110,7 @@ changelog=
 	0.1   - Versão inicial com Simbologia Militar
 
 	ENGLISH
+	2.2.1 - Added insert MASACODE
 	2.2.0 - Added Make Mosaic
 	2.1.0 - Added pending features, bug fixes
 	2.0.3 - Added Military Symbology for QGIS 3
