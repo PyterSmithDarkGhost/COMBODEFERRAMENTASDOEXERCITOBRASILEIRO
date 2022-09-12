@@ -1,286 +1,211 @@
 # -*- coding: utf-8 -*-
 
 # Importar as bibliotecas necessárias:
+from abc import ABC, abstractmethod
+from typing import List
+from dataclasses import MISSING, dataclass
 import os
 from qgis import processing
+from qgis.PyQt.Qt import QVariant
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.core import (QgsProcessing, QgsVectorFileWriter,QgsProcessingAlgorithm,
                        QgsProcessingParameterMultipleLayers, QgsCoordinateTransformContext,
                        QgsProcessingFeatureSourceDefinition,
                        QgsProcessingFeatureSourceDefinition,
-                       QgsProcessingParameterFolderDestination
+                       QgsProcessingParameterFolderDestination,
+                       QgsProcessingParameterBoolean, QgsFields, QgsField,
+                       QgsVectorLayer, QgsFeature, QgsWkbTypes
                        )
 
 class InsertMASACODE(QgsProcessingAlgorithm):
-    INPUT_LINES = 'INPUT_LINES'
-    INPUT_AREAS = 'INPUT_AREAS'
-    INPUT_POINTS = 'INPUT_POINTS'
+    INPUT = 'INPUT'
+    KEEP_ATTRIBUTES = 'KEEP_ATTRIBUTES'
     OUTPUT_FOLDER = 'OUTPUT_FOLDER'
 
     def initAlgorithm(self, config = None):
         self.addParameter(
             QgsProcessingParameterMultipleLayers(
-                self.INPUT_POINTS,
-                self.tr('Selecione as camadas vetoriais do tipo ponto para inserir o MASACODE:'),
-                layerType=QgsProcessing.TypeVectorPoint,
-                optional=True
+                self.INPUT,
+                self.tr('Input Layers'),
+                QgsProcessing.TypeVectorAnyGeometry
             )
         )
         self.addParameter(
-            QgsProcessingParameterMultipleLayers(
-                self.INPUT_LINES,
-                self.tr('Selecione as camadas vetoriais do tipo linha para inserir o MASACODE:'),
-                layerType=QgsProcessing.TypeVectorLine,
-                optional=True
-            )
-        )
-        self.addParameter(
-            QgsProcessingParameterMultipleLayers(
-                self.INPUT_AREAS,
-                self.tr('Selecione as camadas vetoriais do tipo área para inserir o MASACODE:'),
-                layerType=QgsProcessing.TypeVectorPolygon,
-                optional=True
+            QgsProcessingParameterBoolean(
+                self.KEEP_ATTRIBUTES,
+                self.tr('Manter atributos da modelagem original'),
+                defaultValue=False,
             )
         )
         self.addParameter(
             QgsProcessingParameterFolderDestination(
                 self.OUTPUT_FOLDER,
-                self.tr('Pasta para salvar os arquivos exportados:')
+                self.tr('Pasta para salvar os arquivos exportados')
             )
         )
 
-    def processAlgorithm(self, parameters, context, feedback):
-        converter = {'VEG_Floresta_A' : 10000, 'VEG_Veg_Cultivada_A' : 10001, 
-                    'VEG_Brejo_Pantano_A' : 10002, 'LOC_Area_Edificada_A' : 10003, 
-                    'LOC_Aglomerado_Rural_De_Extensao_Urbana_P' : 10003, 'LOC_Aglomerado_Rural_Isolado_P' : 10003, 
-                    'LOC_Cidade_P' : 10003, 'LOC_Vila_P' : 10003, 'HID_Massa_Dagua_A' : 10004, 
-                    'HID_Trecho_Massa_Dagua_A' : 10004, 'TRA_Trecho_Rodoviario_L' : 20003, 'TRA_Arruamento_L' : 20004, 
-                    'TRA_Ponte_L' : 20005, 'TRA_Trecho_Ferroviario_L' : 20006, 'HID_Trecho_Drenagem_L' : 21002}
-        converter_nome = {'VEG_Floresta_A' : 'Forest', 'VEG_Veg_Cultivada_A' : 'Plantation', 
-                        'VEG_Brejo_Pantano_A' : 'Swamp',
-                        'LOC_Area_Edificada_A' : 'Urban_Area', 'LOC_Aglomerado_Rural_De_Extensao_Urbana_P' : 'Urban_Point', 
-                        'LOC_Aglomerado_Rural_Isolado_P' : 'Urban_Point', 'LOC_Cidade_P' : 'Urban_Point', 
-                        'LOC_Vila_P' : 'Urban_Point', 'HID_Massa_Dagua_A' : 'Water', 'HID_Trecho_Massa_Dagua_A' : 'Water', 
-                        'TRA_Trecho_Rodoviario_L' : 'Road', 'TRA_Arruamento_L' : 'Road', 'TRA_Ponte_L' : 'Bridge', 
-                        'TRA_Trecho_Ferroviario_L' : 'Railroad', 'HID_Trecho_Drenagem_L' : 'River'}            
+    def processAlgorithm(self, parameters, context, feedback):         
         outputFolderPath = self.parameterAsString(parameters, self.OUTPUT_FOLDER, context)
-        linesInput = self.parameterAsLayerList(parameters, self.INPUT_LINES, context)
-        areasInput = self.parameterAsLayerList(parameters, self.INPUT_AREAS, context)
-        pointsInput = self.parameterAsLayerList(parameters, self.INPUT_POINTS, context)
-        lines = []
-        areas = []
-        points = []
-        merge_road = []
-        merge_loc = []
-        merge_water = []
-        numPoint = 0
-        numLine = 0
-        numPoly = 0
-        options = QgsVectorFileWriter.SaveVectorOptions()
-        options.driverName = "ESRI Shapefile"
-        for j in range(len(linesInput)):
-            auxLineLayer = self.runAddCount(linesInput[j], feedback = feedback)
-            self.runCreateSpatialIndex(auxLineLayer, feedback = feedback)
-            auxLineLayer.setName(linesInput[j].name())
-            lines.append(auxLineLayer)
-        for j in range(len(areasInput)):
-            auxAreaLayer = self.runAddCount(areasInput[j], feedback = feedback)
-            self.runCreateSpatialIndex(auxAreaLayer, feedback = feedback)
-            auxAreaLayer.setName(areasInput[j].name())
-            areas.append(auxAreaLayer)
-        for j in range(len(pointsInput)):
-            auxPointLayer = self.runAddCount(pointsInput[j], feedback = feedback)
-            self.runCreateSpatialIndex(auxPointLayer, feedback = feedback)
-            auxPointLayer.setName(pointsInput[j].name())
-            points.append(auxPointLayer)
-
-        for j in range(len(lines)):
-            name = str(lines[j].name())
-            if name in converter_nome:
-                if name == 'TRA_Trecho_Rodoviario_L':
-                    features = lines[j].getFeatures()
-                    lines[j].startEditing()
-                    layer_provider = lines[j].dataProvider()
-                    for f in features:
-                        id = f.id()
-                        if f[2] == 'Rodovia' and f[3] == 'Desconhecida':
-                            attrs = {(len(lines[j].fields().names())-1) : 20002}
-                            layer_provider.changeAttributeValues({id : attrs})
-                        elif f[2] == 'Rodovia' and (f[3] == 'Federal' or f[3] == 'Estadual'):
-                            attrs = {(len(lines[j].fields().names())-1) : 20001}
-                            layer_provider.changeAttributeValues({id : attrs})
-                        elif f[2] == 'Caminho carroçável':
-                            attrs = {(len(lines[j].fields().names())-1) : 20003}
-                            layer_provider.changeAttributeValues({id : attrs})
-                        else:
-                            attrs = {(len(lines[j].fields().names())-1) : converter[name]}
-                            layer_provider.changeAttributeValues({id : attrs})
-                    attrsdelete = []
-                    for k in range((len(lines[j].fields().names())-1)):
-                        attrsdelete.append(k)
-                    layer_provider.deleteAttributes(list(attrsdelete))
-                    lines[j].commitChanges()
-                elif name == 'HID_Trecho_Drenagem_L':
-                    features = lines[j].getFeatures()
-                    lines[j].startEditing()
-                    layer_provider = lines[j].dataProvider()
-                    for f in features:
-                        id = f.id()
-                        if f[8] == 'Permanente':
-                            attrs = {(len(lines[j].fields().names())-1) : 21002}
-                            layer_provider.changeAttributeValues({id : attrs})
-                        elif f[8] == 'Temporário':
-                            attrs = {(len(lines[j].fields().names())-1) : 21003}
-                            layer_provider.changeAttributeValues({id : attrs})
-                        else: 
-                            attrs = {(len(lines[j].fields().names())-1) : 21001}
-                            layer_provider.changeAttributeValues({id : attrs})
-                    attrsdelete = []
-                    for k in range((len(lines[j].fields().names())-1)):
-                        attrsdelete.append(k)
-                    layer_provider.deleteAttributes(list(attrsdelete))
-                    lines[j].commitChanges()
-                else:
-                    features = lines[j].getFeatures()
-                    lines[j].startEditing()
-                    layer_provider = lines[j].dataProvider()
-                    for f in features:
-                        id = f.id()
-                        attrs = {(len(lines[j].fields().names())-1) : converter[name]}
-                        layer_provider.changeAttributeValues({id : attrs})
-                    attrsdelete = []    
-                    for k in range((len(lines[j].fields().names())-1)):
-                        attrsdelete.append(k)
-                    layer_provider.deleteAttributes(list(attrsdelete))
-                    lines[j].commitChanges()
-
-                if name == 'TRA_Trecho_Rodoviario_L' or name == 'TRA_Arruamento_L':
-                    merge_road.append(lines[j])
-
-                outputFilePath = os.path.join(outputFolderPath, converter_nome[name])
-                QgsVectorFileWriter.writeAsVectorFormatV2(lines[j], outputFilePath, QgsCoordinateTransformContext(), options)
-                numLine += 1
-            else:
-                continue    
-        if len(merge_road) != 0:
-            mergeado_road = self.mergeVector(list(merge_road), feedback)
-            mergeado_road.startEditing()
-            mergeado_road.dataProvider().deleteAttributes([1, 2])
-            mergeado_road.updateFields()
-            mergeado_road.commitChanges()
-            outputFilePath = os.path.join(outputFolderPath, 'Road')
-            QgsVectorFileWriter.writeAsVectorFormatV2(mergeado_road, outputFilePath, QgsCoordinateTransformContext(), options)
-            numLine += 1
-        
-        for j in range(len(areas)):
-            name = str(areas[j].name())
-            if name in converter_nome:
-                features = areas[j].getFeatures()
-                areas[j].startEditing()
-                layer_provider = areas[j].dataProvider()
-                for f in features:
-                    id = f.id()
-                    attrs = {(len(areas[j].fields().names())-1) : converter[name]}
-                    layer_provider.changeAttributeValues({id : attrs})
-                attrsdelete = []
-                for k in range((len(areas[j].fields().names())-1)):
-                    attrsdelete.append(k)
-                layer_provider.deleteAttributes(list(attrsdelete))
-                areas[j].commitChanges()
-
-                if name == 'HID_Massa_Dagua_A' or name == 'HID_Trecho_Massa_Dagua_A':
-                    merge_water.append(areas[j])
-
-                outputFilePath = os.path.join(outputFolderPath, converter_nome[name])
-                QgsVectorFileWriter.writeAsVectorFormatV2(areas[j], outputFilePath, QgsCoordinateTransformContext(), options)
-                numPoly += 1
-            else:
+        keepAttributes = self.parameterAsBool(parameters, self.KEEP_ATTRIBUTES, context)
+        inputLayers = self.parameterAsLayerList(
+            parameters, self.INPUT, context)
+        nInputs = len(inputLayers)
+        if nInputs == 0:
+            return {self.OUTPUT_FOLDER: 'Camadas vazias. Não foi possível converter os dados.'}
+        conversion_factory = {
+            'VEG_Floresta_A': EDGVClass(
+                masacode=10000,
+                output_file_name='Forest',
+                output_file_path=outputFolderPath,
+                keep_input_attributes=keepAttributes,
+                output_geom_type=QgsWkbTypes.Polygon,
+            ),
+            'VEG_Veg_Cultivada_A': EDGVClass(
+                masacode=10001,
+                output_file_name='Plantation',
+                output_file_path=outputFolderPath,
+                keep_input_attributes=keepAttributes,
+                output_geom_type=QgsWkbTypes.Polygon,
+            ),
+            'VEG_Brejo_Pantano_A': EDGVClass(
+                masacode=10002,
+                output_file_name='Swamp',
+                output_file_path=outputFolderPath,
+                keep_input_attributes=keepAttributes,
+                output_geom_type=QgsWkbTypes.Polygon,
+            ),
+            'LOC_Area_Edificada_A': EDGVClass(
+                masacode=10003,
+                output_file_name='Urban_Area',
+                output_file_path=outputFolderPath,
+                keep_input_attributes=keepAttributes,
+                output_geom_type=QgsWkbTypes.Polygon,
+            ),
+            'LOC_Aglomerado_Rural_De_Extensao_Urbana_P': EDGVClass(
+                masacode=10003,
+                output_file_name='Urban_Point',
+                output_file_path=outputFolderPath,
+                keep_input_attributes=keepAttributes,
+                output_geom_type=QgsWkbTypes.Point,
+            ),
+            'LOC_Aglomerado_Rural_Isolado_P': EDGVClass(
+                masacode=10003,
+                output_file_name='Urban_Point',
+                output_file_path=outputFolderPath,
+                keep_input_attributes=keepAttributes,
+                output_geom_type=QgsWkbTypes.Point,
+            ),
+            'LOC_Cidade_P': EDGVClass(
+                masacode=10003,
+                output_file_name='Urban_Point',
+                output_file_path=outputFolderPath,
+                keep_input_attributes=keepAttributes,
+                output_geom_type=QgsWkbTypes.Point,
+            ),
+            'LOC_Vila_P': EDGVClass(
+                masacode=10003,
+                output_file_name='Urban_Point',
+                output_file_path=outputFolderPath,
+                keep_input_attributes=keepAttributes,
+                output_geom_type=QgsWkbTypes.Point,
+            ),
+            'HID_Massa_Dagua_A': EDGVClass(
+                masacode=10004,
+                output_file_name='Water',
+                output_file_path=outputFolderPath,
+                keep_input_attributes=keepAttributes,
+                output_geom_type=QgsWkbTypes.Polygon,
+            ),
+            'HID_Trecho_Massa_Dagua_A': EDGVClass(
+                masacode=10004,
+                output_file_name='Water',
+                output_file_path=outputFolderPath,
+                keep_input_attributes=keepAttributes,
+                output_geom_type=QgsWkbTypes.Polygon,
+            ),
+            'HID_Trecho_Drenagem_L': TrechoDrenagem(
+                output_file_name='River',
+                output_file_path=outputFolderPath,
+                keep_input_attributes=keepAttributes,
+                output_geom_type=QgsWkbTypes.LineString,
+            ),
+            'REL_Terreno_Exposto_A': TerrenoExposto(
+                output_file_name='Sand',
+                output_file_path=outputFolderPath,
+                keep_input_attributes=keepAttributes,
+                output_geom_type=QgsWkbTypes.Polygon,
+            ),
+            'REL_Elemento_Fisiografico_Natural_A': ElementoFisiograficoNatural(
+                output_file_path=outputFolderPath,
+                keep_input_attributes=keepAttributes,
+                output_geom_type=QgsWkbTypes.Polygon,
+            ),
+            'TRA_Trecho_Rodoviario_L': TrechoRodoviario(
+                output_file_name='Road',
+                output_file_path=outputFolderPath,
+                keep_input_attributes=keepAttributes,
+                output_geom_type=QgsWkbTypes.LineString,
+            ),
+            'TRA_Arruamento_L': EDGVClass(
+                masacode=20004,
+                output_file_name='Road',
+                output_file_path=outputFolderPath,
+                keep_input_attributes=keepAttributes,
+                output_geom_type=QgsWkbTypes.LineString,
+            ),
+            'TRA_Ponte_L': EDGVClass(
+                masacode=20005,
+                output_file_name='Bridge',
+                output_file_path=outputFolderPath,
+                keep_input_attributes=keepAttributes,
+                output_geom_type=QgsWkbTypes.LineString,
+            ),
+            'TRA_TUNEL_L': EDGVClass(
+                masacode=20007,
+                output_file_name='Tunnel',
+                output_file_path=outputFolderPath,
+                keep_input_attributes=keepAttributes,
+                output_geom_type=QgsWkbTypes.LineString,
+            ),
+            'TRA_Trecho_Ferroviario_L': EDGVClass(
+                masacode=20006,
+                output_file_name='Railroad',
+                output_file_path=outputFolderPath,
+                keep_input_attributes=keepAttributes,
+                output_geom_type=QgsWkbTypes.LineString,
+            ),
+        }
+        stepSize = 100/nInputs
+        for current, layer in enumerate(inputLayers):
+            if feedback.isCanceled():
+                break
+            if layer.name() not in conversion_factory:
                 continue
-
-        if len(merge_water) != 0:
-            mergeado_water = self.mergeVector(list(merge_water), feedback)
-            mergeado_water.startEditing()
-            mergeado_water.dataProvider().deleteAttributes([1, 2])
-            mergeado_water.updateFields()
-            mergeado_water.commitChanges()
-            outputFilePath = os.path.join(outputFolderPath, 'Water')
-            QgsVectorFileWriter.writeAsVectorFormatV2(mergeado_water, outputFilePath, QgsCoordinateTransformContext(), options)
-            numPoly += 1
-        
-        for j in range(len(points)):
-            name = str(points[j].name())
-            if name in converter_nome:
-                features = points[j].getFeatures()
-                points[j].startEditing()
-                layer_provider = points[j].dataProvider()
-                for f in features:
-                    id = f.id()
-                    attrs = {(len(points[j].fields().names())-1) : converter[name]}
-                    layer_provider.changeAttributeValues({id : attrs})
-                attrsdelete = []
-                for k in range((len(points[j].fields().names())-1)):
-                    attrsdelete.append(k)
-                attrsdelete.pop(0)
-                layer_provider.deleteAttributes(list(attrsdelete))
-                points[j].commitChanges()
-
-                if name == 'LOC_Aglomerado_Rural_De_Extensao_Urbana_P' or name == 'LOC_Aglomerado_Rural_Isolado_P' or name == 'LOC_Cidade_P' or name == 'LOC_Vila_P':
-                    merge_loc.append(points[j])
-
-                outputFilePath = os.path.join(outputFolderPath, converter_nome[name])
-                QgsVectorFileWriter.writeAsVectorFormatV2(points[j], outputFilePath, QgsCoordinateTransformContext(), options)
-                numPoint += 1
-            else:
+            if layer.featureCount() == 0:
                 continue
-
-        if len(merge_loc) != 0:
-            mergeado_loc = self.mergeVector(list(merge_loc), feedback)
-            mergeado_loc.startEditing()
-            mergeado_loc.dataProvider().deleteAttributes([2, 3])
-            mergeado_loc.updateFields()
-            mergeado_loc.commitChanges()
-            outputFilePath = os.path.join(outputFolderPath, 'Urban_Point')
-            QgsVectorFileWriter.writeAsVectorFormatV2(mergeado_loc, outputFilePath, QgsCoordinateTransformContext(), options)   
-            numPoint += 1
-
-        returnMessage = f'{numPoint} camadas pontos, {numLine} camadas linhas, {numPoly} camadas polígonos, total = {numPoint+numLine+numPoly} camadas geradas em {outputFolderPath}'
-        return {self.OUTPUT_FOLDER: returnMessage} 
-
-    def runAddCount(self, inputLyr, feedback):
-        output = processing.run(
-            "native:addautoincrementalfield",
-            {
-                'INPUT': inputLyr,
-                'FIELD_NAME':'MASACODE',
-                'START': 0,
-                'GROUP_FIELDS': [],
-                'SORT_EXPRESSION': '',
-                'SORT_ASCENDING': False,
-                'SORT_NULLS_FIRST': False,
-                'OUTPUT': 'memory:'
-            },
-            feedback = feedback
-        )
-        return output['OUTPUT']
-
-    def runCreateSpatialIndex(self, inputLyr, feedback):
-        processing.run(
-            "native:createspatialindex",
-            {'INPUT': inputLyr},
-            feedback = feedback
-        )
-
-    def mergeVector(self, inputLyr, feedback):
-        output = processing.run(
-            "native:mergevectorlayers", 
-            {
-                'LAYERS': inputLyr, 
-                'CRS': QgsProcessingFeatureSourceDefinition(),
-                'OUTPUT': 'memory:'
-            },
-            feedback = feedback
-        )
-        return output['OUTPUT']
+            fixedLyr = processing.run(
+                "native:dropmzvalues",
+                {
+                    'INPUT':layer,
+                    'DROP_M_VALUES':True,
+                    'DROP_Z_VALUES':True,
+                    'OUTPUT':'TEMPORARY_OUTPUT'
+                }
+            )['OUTPUT']
+            fixedLyr = processing.run(
+                "native:multiparttosingleparts",
+                {
+                    'INPUT': fixedLyr,
+                    'OUTPUT': 'TEMPORARY_OUTPUT'
+                }
+            )['OUTPUT']
+            conversion_factory[layer.name()].convertFeatures(
+                fixedLyr, fixedLyr.getFeatures()
+            )
+            
+            feedback.setProgress(current * stepSize)
+        
+        return {self.OUTPUT_FOLDER: 'Conversão concluída'}
 
     def tr(self, string):
         return QCoreApplication.translate('Processing', string)
@@ -302,3 +227,189 @@ class InsertMASACODE(QgsProcessingAlgorithm):
 
     def shortHelpString(self):
         return self.tr("InsertMASACODE")
+
+@dataclass
+class AbstractEDGVClass(ABC):
+    output_file_path: str
+    keep_input_attributes: bool
+    output_geom_type: int
+    output_file_name: str = MISSING
+    masacode: int = MISSING
+
+    
+    @abstractmethod
+    def get_masacode(self, feature):
+        pass
+    
+    def __post_init__(self):
+        self.output_file = self.get_output_file()
+    
+    def get_output_file(self):
+        return os.path.join(self.output_file_path, self.output_file_name+'.shp')
+
+    def get_output_fields(self, input_layer):
+        fields = QgsFields()
+        fields.append(QgsField('MASACODE', QVariant.Int))
+        if not self.keep_input_attributes:
+            return fields
+        for field in input_layer.fields():
+            fields.append(field)
+        return fields
+
+    def create_output_file_writer(self, output_fields, output_file, srs):
+        options = QgsVectorFileWriter.SaveVectorOptions()
+        options.driverName = "ESRI Shapefile"
+        options.actionOnExistingFile = QgsVectorFileWriter.AppendToLayerAddFields if os.path.exists(
+            output_file) else QgsVectorFileWriter.CreateOrOverwriteFile
+        vectorFileWriter = QgsVectorFileWriter.create(
+            output_file,
+            output_fields,
+            self.output_geom_type,
+            srs,
+            QgsCoordinateTransformContext(),
+            options
+        )
+        return vectorFileWriter
+    
+    def convertFeature(self, feature: QgsFeature, output_fields) -> QgsFeature:
+        masacode = self.get_masacode(feature)
+        if masacode is None:
+            return None
+        newFeat = QgsFeature(output_fields)
+        newFeat.setGeometry(feature.geometry())
+        newFeat['MASACODE'] = masacode
+        if not self.keep_input_attributes:
+            return newFeat
+        for field in feature.fields():
+            field_name = field.name()
+            if field_name not in self.output_field_names:
+                continue
+            newFeat[field_name] = feature[field_name]
+        return newFeat
+    
+    def convertFeatures(self, input_layer, featureList: List[QgsFeature]) -> bool:
+        output_fields = self.get_output_fields(input_layer)
+        self.output_field_names = [field.name()
+                                   for field in output_fields]
+        output_file_writer = self.create_output_file_writer(
+            output_fields=output_fields,
+            output_file=self.output_file,
+            srs=input_layer.crs(),
+        )
+        convertLambda = lambda x: self.convertFeature(x, output_fields)
+        out = output_file_writer.addFeatures(
+            list(filter(lambda x: x is not None, map(convertLambda, featureList)))
+        )
+        del output_file_writer
+
+@dataclass
+class EDGVClass(AbstractEDGVClass):
+    def get_masacode(self, feature):
+        return self.masacode
+
+@dataclass
+class TrechoDrenagem(AbstractEDGVClass):
+    masacode: int = 0
+    def __post_init__(self):
+        super().__post_init__()
+        self.conversion_map = {
+            'Permanente': 21002,
+            'Temporário': 21003,
+        }
+        self.default_value = 21002
+    def get_masacode(self, feature):
+        if 'regime' not in feature:
+            return None
+        return self.conversion_map.get(feature['regime'], self.default_value)
+
+@dataclass
+class TrechoRodoviario(AbstractEDGVClass):
+    masacode: int = 0
+
+    def get_masacode(self, feature):
+        tipoTrechoRodField = [
+            field.name() for field in feature.fields() \
+                if field.name().lower() == 'tipotrechorod'
+        ]
+        if len(tipoTrechoRodField) == 0:
+            return None
+        tipoTrechoRodField = tipoTrechoRodField[0]
+        jurisdicaoField = [
+            field.name() for field in feature.fields()
+            if field.name().lower() == 'jurisdicao'
+        ]
+        if len(jurisdicaoField) == 0:
+            return None
+        jurisdicaoField = jurisdicaoField[0]
+        if feature[tipoTrechoRodField] == 'Rodovia' and feature[jurisdicaoField] == 'Desconhecida':
+            return 20002
+        elif feature[tipoTrechoRodField] == 'Rodovia' and feature[jurisdicaoField] in ('Federal', 'Estadual'):
+            return 20003
+        else:
+            return 20001
+
+
+@dataclass
+class TerrenoExposto(AbstractEDGVClass):
+    masacode: int = 0
+
+    def get_masacode(self, feature):
+        tipoTerrExpField = [
+            field.name() for field in feature.fields()
+            if field.name().lower() == 'tipoterrex'
+        ]
+        if len(tipoTerrExpField) == 0:
+            return None
+        tipoTerrExpField = tipoTerrExpField[0]
+        if feature[tipoTerrExpField] == 'Areia':
+            return 10005
+        return None
+
+
+@dataclass
+class ElementoFisiograficoNatural(AbstractEDGVClass):
+    masacode: int = 0
+    output_file_name: str = ''
+
+    def get_masacode(self, feature):
+        tipoElemNatField = [
+            field.name() for field in feature.fields()
+            if field.name().lower() == 'tipoelemnat'
+        ]
+        if len(tipoElemNatField) == 0:
+            return None
+        tipoElemNatField = tipoElemNatField[0]
+        if feature[tipoElemNatField] == 'Montanha':
+            return 10007
+        elif feature[tipoElemNatField] == 'Escarpa':
+            return 21000
+        return None
+
+
+    def convertFeatures(self, input_layer, featureList: List[QgsFeature]) -> bool:
+        output_fields = self.get_output_fields(input_layer)
+        self.output_field_names = [field.name()
+                                for field in output_fields]
+        outputFileWriterDict = {
+            10007: self.create_output_file_writer(
+                input_layer,
+                output_fields,
+                output_file=os.path.join(self.output_file_path, 'Mountain.shp'),
+                srs=input_layer.crs(),
+            ),
+            21000: self.create_output_file_writer(
+                input_layer,
+                output_fields,
+                output_file=os.path.join(self.output_file_path, 'Cliff.shp'),
+                srs=input_layer.crs(),
+            ),
+
+        }
+        def convertLambda(x): return self.convertFeature(x, output_fields)
+        for feat in map(convertLambda, featureList):
+            if feat is None:
+                continue
+            outputFileWriterDict[feat['MASACODE']].addFeature(feat)
+        for code, writer in outputFileWriterDict.items():
+            del writer
+        return True
