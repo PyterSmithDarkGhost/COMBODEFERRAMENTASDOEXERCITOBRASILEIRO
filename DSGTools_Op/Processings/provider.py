@@ -1,3 +1,4 @@
+from DSGTools_Op.Processings.convertEDGVzipToMASACODE import ConvertBDGExZIPtoMASACODE
 from qgis.core import QgsProcessingProvider
 from processing.core.ProcessingConfig import ProcessingConfig, Setting
 from qgis.PyQt.QtGui import QIcon
@@ -14,6 +15,7 @@ class Provider(QgsProcessingProvider):
         self.addAlgorithm(MakeMosaic())
         self.addAlgorithm(MatchLayerAndFrame())
         self.addAlgorithm(ConvertEDGVtoMASACODE())
+        self.addAlgorithm(ConvertBDGExZIPtoMASACODE())
 
     def load(self):
         ProcessingConfig.settingIcons[self.name()] = self.icon()
