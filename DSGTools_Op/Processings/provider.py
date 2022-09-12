@@ -4,7 +4,7 @@ from qgis.PyQt.QtGui import QIcon
 import os
 from .makeMosaic import MakeMosaic
 from .matchLayerAndFrame import MatchLayerAndFrame
-from .insertMASACODE import InsertMASACODE
+from .insertMASACODE import ConvertEDGVtoMASACODE
 class Provider(QgsProcessingProvider):
 
     def __init__(self):
@@ -13,7 +13,7 @@ class Provider(QgsProcessingProvider):
     def loadAlgorithms(self, *args, **kwargs):
         self.addAlgorithm(MakeMosaic())
         self.addAlgorithm(MatchLayerAndFrame())
-        self.addAlgorithm(InsertMASACODE())
+        self.addAlgorithm(ConvertEDGVtoMASACODE())
 
     def load(self):
         ProcessingConfig.settingIcons[self.name()] = self.icon()

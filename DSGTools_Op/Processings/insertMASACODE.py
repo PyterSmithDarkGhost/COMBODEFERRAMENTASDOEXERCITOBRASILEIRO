@@ -17,7 +17,7 @@ from qgis.core import (QgsProcessing, QgsVectorFileWriter,QgsProcessingAlgorithm
                        QgsVectorLayer, QgsFeature, QgsWkbTypes
                        )
 
-class InsertMASACODE(QgsProcessingAlgorithm):
+class ConvertEDGVtoMASACODE(QgsProcessingAlgorithm):
     INPUT = 'INPUT'
     KEEP_ATTRIBUTES = 'KEEP_ATTRIBUTES'
     OUTPUT_FOLDER = 'OUTPUT_FOLDER'
@@ -26,7 +26,7 @@ class InsertMASACODE(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterMultipleLayers(
                 self.INPUT,
-                self.tr('Input Layers'),
+                self.tr('Camadas de entrada'),
                 QgsProcessing.TypeVectorAnyGeometry
             )
         )
@@ -211,13 +211,13 @@ class InsertMASACODE(QgsProcessingAlgorithm):
         return QCoreApplication.translate('Processing', string)
 
     def createInstance(self):
-        return InsertMASACODE()
+        return ConvertEDGVtoMASACODE()
 
     def name(self):
-        return 'insertMASACODE'
+        return 'convertedgvtomasacode'
 
     def displayName(self):
-        return self.tr('Inserir MASACODE')
+        return self.tr('Converte shapefiles no formato EDGV para o formato MASACODE')
 
     def group(self):
         return self.tr('Missoes')
@@ -226,7 +226,7 @@ class InsertMASACODE(QgsProcessingAlgorithm):
         return 'missoes'
 
     def shortHelpString(self):
-        return self.tr("InsertMASACODE")
+        return self.tr("Converte os shapefiles baixados do BDGEx para o formato MASACODE")
 
 @dataclass
 class AbstractEDGVClass(ABC):
