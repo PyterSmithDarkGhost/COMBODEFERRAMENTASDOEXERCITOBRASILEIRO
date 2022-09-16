@@ -318,9 +318,14 @@ class TrechoDrenagem(AbstractEDGVClass):
         }
         self.default_value = 21002
     def get_masacode(self, feature):
-        if 'regime' not in feature:
+        regimeField = [
+            field.name() for field in feature.fields()
+            if field.name().lower() == 'regime'
+        ]
+        if len(regimeField) == 0:
             return None
-        return self.conversion_map.get(feature['regime'], self.default_value)
+        regimeField = regimeField[0]
+        return self.conversion_map.get(feature[regimeField], self.default_value)
 
 @dataclass
 class TrechoRodoviario(AbstractEDGVClass):
@@ -329,7 +334,7 @@ class TrechoRodoviario(AbstractEDGVClass):
     def get_masacode(self, feature):
         tipoTrechoRodField = [
             field.name() for field in feature.fields() \
-                if field.name().lower() == 'tipotrechorod'
+                if field.name().lower() == 'tipotrecho'
         ]
         if len(tipoTrechoRodField) == 0:
             return None
