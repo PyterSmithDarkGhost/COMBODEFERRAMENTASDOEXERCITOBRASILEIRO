@@ -58,13 +58,14 @@ class Interface(QtWidgets.QDockWidget, GUI):
         shaderType = QgsColorRampShader()
         shaderType.setColorRampType(QgsColorRampShader.Discrete)
         item_list = []
-        item_list.append(QgsColorRampShader.ColorRampItem(1, QColor(0, 0, 0, 0), lbl = "Sem visada"))
+        item_list.append(QgsColorRampShader.ColorRampItem(0, QColor(0, 0, 0), lbl = "Sem visada"))
         item_list.append(QgsColorRampShader.ColorRampItem(1, QColor(0, 255, 0), lbl = "Visível"))
         shaderType.setColorRampItemList(item_list)
         shader = QgsRasterShader()
         shader.setRasterShaderFunction(shaderType)
         renderer = QgsSingleBandPseudoColorRenderer(raster_layer.dataProvider(), 1, shader)
         raster_layer.setRenderer(renderer)
+        raster_layer.triggerRepaint()
 
     def doWork(self, inputPoint, pointCrs):
         if not self.layerCombo.currentLayer():
