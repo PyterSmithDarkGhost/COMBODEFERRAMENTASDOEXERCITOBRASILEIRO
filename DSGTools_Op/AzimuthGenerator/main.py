@@ -52,7 +52,7 @@ class Main(QtWidgets.QDockWidget, FORM_CLASS):
         self.closeEvent = self.closeDock
         self.pointsButton.clicked.connect(self.getFromGeometry)
         self.myToolGeom.geometrySelected.connect(self.getWorkGeom)
-        self.pointsButton.toggled.connect(self.getWorkPoints)
+        self.FinishPointsButton.clicked.connect(self.getWorkPoints)
         self.csvButton.clicked.connect(self.exportCsv) 
 
     def getFromGeometry(self, state):
@@ -112,15 +112,12 @@ class Main(QtWidgets.QDockWidget, FORM_CLASS):
             return
 
     def getWorkPoints(self):
-        if not self.pointsButton.isChecked():
-            pointList = []
-            for geom in self.geomlist:
-                for point in geom.vertices():
-                    pointList.append(point)
-            self.geomlist = []
-            self.doWork(pointList)
-        else:
-            pass
+        pointList = []
+        for geom in self.geomlist:
+            for point in geom.vertices():
+                pointList.append(point)
+        self.geomlist = []
+        self.doWork(pointList)
 
     def exportCsv(self):
         fileDlg = QFileDialog()

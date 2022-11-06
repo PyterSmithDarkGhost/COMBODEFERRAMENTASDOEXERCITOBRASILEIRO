@@ -39,6 +39,13 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QPushButton" name="FinishPointsButton">
+        <property name="text">
+         <string>Finalizar</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item>
