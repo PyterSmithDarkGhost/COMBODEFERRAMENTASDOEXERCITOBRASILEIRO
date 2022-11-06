@@ -48,7 +48,7 @@ class ConvertBDGExZIPtoMASACODE(QgsProcessingAlgorithm):
         )
 
     def processAlgorithm(self, parameters, context, feedback):         
-        outputFolderPath = self.parameterAsString(parameters, self.OUTPUT_FOLDER, context)
+        self.outputFolderPath = self.parameterAsString(parameters, self.OUTPUT_FOLDER, context)
         keepAttributes = self.parameterAsBool(parameters, self.KEEP_ATTRIBUTES, context)
         inputFolder = self.parameterAsFile(
             parameters, self.INPUT_FOLDER, context)
@@ -61,25 +61,32 @@ class ConvertBDGExZIPtoMASACODE(QgsProcessingAlgorithm):
             if feedback.isCanceled():
                 break
             multiStepFeedback.setCurrentStep(current)
-            tempFolder = os.path.join(outputFolderPath, '_temp')
+            tempFolder = os.path.join(self.outputFolderPath, '_temp')
             if not os.path.exists(tempFolder):
                 os.mkdir(tempFolder)
             with zipfile.ZipFile(file, 'r') as zip_ref:
                 zip_ref.extractall(tempFolder)
+            zip_ref.close()
             fileList = [i for i in glob.glob(f'{tempFolder}/**/*.shp')]
             processing.run(
                 "DSGToolsOpProvider:convertedgvtomasacode",
                 {
                     "INPUT": fileList,
                     "KEEP_ATTRIBUTES": keepAttributes,
-                    "OUTPUT_FOLDER": outputFolderPath,
+                    "OUTPUT_FOLDER": self.outputFolderPath,
                 },
                 context=context,
-                feedback=multiStepFeedback,
+                feedback=multiStepFeedback
             )
-            shutil.rmtree(tempFolder)
         
         return {self.OUTPUT_FOLDER: 'Conversão concluída'}
+    
+    def postProcessAlgorithm(self, context, feedback):
+        tempFolder = os.path.join(self.outputFolderPath, '_temp')
+        if not os.path.exists(tempFolder):
+            return
+        
+        shutil.rmtree(tempFolder)
 
     def tr(self, string):
         return QCoreApplication.translate('Processing', string)
