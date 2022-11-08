@@ -73,14 +73,7 @@ class ConvertBDGExZIPtoMASACODE(QgsProcessingAlgorithm):
             )
         
         return {self.OUTPUT_FOLDER: 'Conversão concluída'}
-    
-    def postProcessAlgorithm(self, context, feedback):
-        if not os.path.exists(self.tempFolder):
-            return
-        try:
-            shutil.rmtree(self.tempFolder)
-        except:
-            pass
+
 
     def tr(self, string):
         return QCoreApplication.translate('Processing', string)
