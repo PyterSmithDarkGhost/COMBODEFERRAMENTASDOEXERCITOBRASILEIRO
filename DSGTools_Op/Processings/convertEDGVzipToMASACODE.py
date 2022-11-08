@@ -47,7 +47,7 @@ class ConvertBDGExZIPtoMASACODE(QgsProcessingAlgorithm):
         keepAttributes = self.parameterAsBool(parameters, self.KEEP_ATTRIBUTES, context)
         inputFolder = self.parameterAsFile(
             parameters, self.INPUT_FOLDER, context)
-        inputFiles = [i for i in glob.glob(f'{inputFolder}/*.zip')]
+        inputFiles = [i for i in glob.glob(f'{inputFolder}/**/*.zip')]
         nInputs = len(inputFiles)
         if nInputs == 0:
             return {self.OUTPUT_FOLDER: 'Não foi possível localizar os arquivos no formato zip na pasta informada'}
@@ -55,6 +55,7 @@ class ConvertBDGExZIPtoMASACODE(QgsProcessingAlgorithm):
         for current, file in enumerate(inputFiles):
             if feedback.isCanceled():
                 break
+            multiStepFeedback.setProgressText(f"Convertendo arquivo {current+1}/{nInputs}")
             multiStepFeedback.setCurrentStep(current)
             self.tempFolder = QgsProcessingUtils.tempFolder()
             with zipfile.ZipFile(file, 'r') as zip_ref:
