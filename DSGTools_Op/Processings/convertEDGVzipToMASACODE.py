@@ -1,24 +1,19 @@
 # -*- coding: utf-8 -*-
 
 # Importar as bibliotecas necessárias:
-from abc import ABC, abstractmethod
 import glob
-import shutil
-from typing import List
-from dataclasses import MISSING, dataclass
 import os
+import shutil
 import zipfile
+
 from qgis import processing
-from qgis.PyQt.Qt import QVariant
-from qgis.PyQt.QtCore import QCoreApplication
-from qgis.core import (QgsProcessing, QgsVectorFileWriter,QgsProcessingAlgorithm,
-                       QgsProcessingParameterMultipleLayers, QgsCoordinateTransformContext,
-                       QgsProcessingFeatureSourceDefinition,
-                       QgsProcessingFeatureSourceDefinition,
+from qgis.core import (QgsProcessingAlgorithm, QgsProcessingMultiStepFeedback,
+                       QgsProcessingParameterBoolean,
+                       QgsProcessingParameterFile,
                        QgsProcessingParameterFolderDestination,
-                       QgsProcessingParameterBoolean, QgsFields, QgsField, QgsProcessingUtils,
-                       QgsVectorLayer, QgsFeature, QgsWkbTypes, QgsProcessingMultiStepFeedback, QgsProcessingParameterFile
-                       )
+                       QgsProcessingUtils)
+from qgis.PyQt.QtCore import QCoreApplication
+
 
 class ConvertBDGExZIPtoMASACODE(QgsProcessingAlgorithm):
     INPUT_FOLDER = 'INPUT_FOLDER'
