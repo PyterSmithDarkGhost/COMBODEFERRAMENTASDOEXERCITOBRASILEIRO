@@ -77,7 +77,10 @@ class ConvertBDGExZIPtoMASACODE(QgsProcessingAlgorithm):
     def postProcessAlgorithm(self, context, feedback):
         if not os.path.exists(self.tempFolder):
             return
-        shutil.rmtree(self.tempFolder)
+        try:
+            shutil.rmtree(self.tempFolder)
+        except:
+            pass
 
     def tr(self, string):
         return QCoreApplication.translate('Processing', string)
