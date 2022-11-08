@@ -16,7 +16,7 @@ from qgis.core import (QgsProcessing, QgsVectorFileWriter,QgsProcessingAlgorithm
                        QgsProcessingFeatureSourceDefinition,
                        QgsProcessingFeatureSourceDefinition,
                        QgsProcessingParameterFolderDestination,
-                       QgsProcessingParameterBoolean, QgsFields, QgsField,
+                       QgsProcessingParameterBoolean, QgsFields, QgsField, QgsProcessingUtils,
                        QgsVectorLayer, QgsFeature, QgsWkbTypes, QgsProcessingMultiStepFeedback, QgsProcessingParameterFile
                        )
 
@@ -61,13 +61,11 @@ class ConvertBDGExZIPtoMASACODE(QgsProcessingAlgorithm):
             if feedback.isCanceled():
                 break
             multiStepFeedback.setCurrentStep(current)
-            tempFolder = os.path.join(self.outputFolderPath, '_temp')
-            if not os.path.exists(tempFolder):
-                os.mkdir(tempFolder)
+            self.tempFolder = QgsProcessingUtils.tempFolder()
             with zipfile.ZipFile(file, 'r') as zip_ref:
-                zip_ref.extractall(tempFolder)
+                zip_ref.extractall(self.tempFolder)
             zip_ref.close()
-            fileList = [i for i in glob.glob(f'{tempFolder}/**/*.shp')]
+            fileList = [i for i in glob.glob(f'{self.tempFolder}/**/*.shp')]
             processing.run(
                 "DSGToolsOpProvider:convertedgvtomasacode",
                 {
@@ -82,11 +80,9 @@ class ConvertBDGExZIPtoMASACODE(QgsProcessingAlgorithm):
         return {self.OUTPUT_FOLDER: 'Conversão concluída'}
     
     def postProcessAlgorithm(self, context, feedback):
-        tempFolder = os.path.join(self.outputFolderPath, '_temp')
-        if not os.path.exists(tempFolder):
+        if not os.path.exists(self.tempFolder):
             return
-        
-        shutil.rmtree(tempFolder)
+        shutil.rmtree(self.tempFolder)
 
     def tr(self, string):
         return QCoreApplication.translate('Processing', string)
